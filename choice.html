@@ -1,0 +1,187 @@
+<!--
+
+page2.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Next Step - Nestwood</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Chat icon button */
+    #chatIcon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: #ffc107;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    /* Chat popup box */
+    .chat-popup {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 300px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+    display: block; /* OPEN BY DEFAULT */
+  }
+
+    .chat-popup.minimized .chat-body {
+      display: none;
+    }
+
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #ffc107;
+      padding: 10px;
+      border-top-left-radius: 15px;
+      border-top-right-radius: 15px;
+    }
+
+    .close-button {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 10px;
+    }
+
+    .newchat-button {
+      background: none;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 10px;
+    }
+
+    .chat-body {
+      padding: 15px;
+    }
+
+    .bubble.bot {
+      margin-bottom: 10px;
+      background-color: #f1f1f1;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .button-group button {
+      flex: 1;
+      padding: 10px;
+      background-color: #ffc107;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+   <!-- Chat Icon -->
+    <div class="chat-icon" onclick="toggleChat()">💬</div>
+
+    <!-- Chat Popup -->
+    <div class="chat-popup" id="chatPopup">
+      <div class="chat-header">
+        <span>Nessy</span>
+        <button class="newchat-button" onclick="event.stopPropagation(); confirmRestart()">↻</button>
+       <!-- <button onclick="toggleChat()">×</button> -->
+      </div>
+
+    <div class="chat-body">
+      <div class="bubble bot" id="greetingMsg"></div>
+      <div class="bubble bot">Thank you for entering your contact details.</div>
+      <div class="bubble bot">Are you looking to buy or sell property in Dubai?</div>
+      <div class="button-group">
+        <button onclick="chooseOption('buy')">Buy</button>
+        <button onclick="chooseOption('sell')">Sell</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  const params = new URLSearchParams(window.location.search);
+  const name = params.get('name');
+  const email = params.get('email');
+  const phone = params.get('phone');
+  const shouldOpenChat = params.get('chat') === 'open';
+
+  const chatPopup = document.getElementById("chatPopup");
+  const chatIcon = document.getElementById("chatIcon");
+  const greeting = document.getElementById("greetingMsg");
+
+  let chatManuallyToggled = false;
+
+  if (name) {
+    greeting.textContent = `Hi ${name}`;
+  }
+
+  function toggleChat() {
+    chatManuallyToggled = true;
+    const isVisible = chatPopup.style.display === "block";
+    chatPopup.style.display = isVisible ? "none" : "block";
+    chatIcon.style.display = isVisible ? "block" : "none";
+  }
+
+  function startNewChat() {
+    window.location.href = "index.html";
+  }
+
+  function confirmRestart() {
+  const confirmed = confirm("Are you sure you want to restart the chat? All previous responses will be lost.");
+  if (confirmed) {
+    startNewChat();
+  }
+}
+
+    
+  function chooseOption(option) {
+    fetch('http://localhost:3000/choice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone, choice: option })
+    }).catch(err => {
+      console.warn('Fetch failed:', err);
+    });
+
+    const queryParams = `?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&chat=open`;
+
+    if (option === 'sell') {
+      window.location.href = `sell.html${queryParams}`;
+    } else if (option === 'buy') {
+      window.location.href = `buy.html${queryParams}`;
+    }
+  }
+
+  // Initial logic to handle chat visibility
+  window.addEventListener("load", () => {
+    if (shouldOpenChat || !chatManuallyToggled) {
+      chatPopup.style.display = "block";
+      chatIcon.style.display = "none";
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!-- page2.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Next Step - Nestwood</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Chat icon button */
+    #chatIcon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: #ffc107;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    /* Chat popup box */
+    .chat-popup {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 300px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 1001;
+    }
+
+    .chat-popup.minimized .chat-body {
+      display: none;
+    }
+
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #ffc107;
+      padding: 10px;
+      border-top-left-radius: 15px;
+      border-top-right-radius: 15px;
+    }
+
+    .close-button {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 10px;
+    }
+
+    .newchat-button {
+      background: none;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 10px;
+    }
+
+    .chat-body {
+      padding: 15px;
+    }
+
+    .bubble.bot {
+      margin-bottom: 10px;
+      background-color: #f1f1f1;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .button-group button {
+      flex: 1;
+      padding: 10px;
+      background-color: #ffc107;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Chat Icon -->
+  <button id="chatIcon" onclick="openChat()">💬</button>
+
+  <!-- Chat Popup -->
+  <div id="chatPopup" class="chat-popup open">
+    <div class="chat-header">
+      <strong>Nestwood Chat</strong>
+      <div style="display: flex; gap: 8px;">
+        <button class="close-button" onclick="closeChat()">×</button>
+        <button class="newchat-button" onclick="event.stopPropagation(); startNewChat()">New Chat</button>
+      </div>
+    </div>
+
+    <div class="chat-body">
+      <div class="bubble bot" id="greetingMsg"></div>
+      <div class="bubble bot">Thank you for entering your contact details.</div>
+      <div class="bubble bot">Are you looking to buy or sell property in Dubai?</div>
+      <div class="button-group">
+        <button onclick="chooseOption('buy')">Buy</button>
+        <button onclick="chooseOption('sell')">Sell</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Extract contact info from URL
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get('name');
+    const email = params.get('email');
+    const phone = params.get('phone');
+
+    document.getElementById('greetingMsg').textContent = `Hi ${name}`;
+
+    function closeChat() {
+  document.getElementById("chatPopup").style.display = "none"; // Fully hide popup
+  document.getElementById("chatIcon").style.display = "block"; // Show chat icon
+}
+
+function openChat() {
+  document.getElementById("chatPopup").style.display = "block"; // Show popup
+  document.getElementById("chatIcon").style.display = "none";  // Hide chat icon
+}
+
+
+    function startNewChat() {
+      window.location.href = "index.html";
+    }
+
+    function chooseOption(option) {
+  // Send data but don’t wait for a response to continue
+  fetch('http://localhost:3000/choice', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, phone, choice: option })
+  }).catch(err => {
+    console.warn('Fetch failed:', err);
+  });
+
+  const queryParams = `?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`;
+
+  if (option === 'sell') {
+    window.location.href = `sell.html${queryParams}`;
+  } else if (option === 'buy') {
+    window.location.href = `buy.html${queryParams}`;
+  }
+}
+
+  </script>
+</body>
+</html>

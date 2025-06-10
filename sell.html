@@ -1,0 +1,211 @@
+<!-- sell.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sell Property - Nestwood</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Chat icon button */
+    #chatIcon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: #ffc107;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    /* Chat popup box */
+    .chat-popup {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 300px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: none;
+      z-index: 1001;
+    }
+
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #ffc107;
+      padding: 10px;
+      border-top-left-radius: 15px;
+      border-top-right-radius: 15px;
+    }
+
+    .close-button {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 10px;
+    }
+
+    .chat-body {
+      padding: 15px;
+    }
+
+    .bubble.bot {
+      margin-bottom: 10px;
+      background-color: #f1f1f1;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    form input,
+    form select,
+    form button {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    form button {
+      background-color: #ffc107;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Chat Icon -->
+    <div class="chat-icon" onclick="toggleChat()">💬</div>
+
+    <!-- Chat Popup -->
+    <div class="chat-popup" id="chatPopup">
+      <div class="chat-header">
+        <span>Nessy</span>
+        <button class="newchat-button" onclick="event.stopPropagation(); confirmRestart()">↻</button>
+       <!-- <button onclick="toggleChat()">×</button> -->
+      </div>
+
+    <div class="chat-body">
+      <div class="bubble bot">Please fill in your property details below:</div>
+      <form id="sellForm">
+        <input type="text" id="ownerName" placeholder="Property Owner Name" required />
+
+        <select id="propertyType" required>
+          <option value="">Type of Property</option>
+          <option>studio</option>
+          <option>BHK 1</option>
+          <option>BHK 2</option>
+          <option>BHK 3</option>
+          <option>Townhouse</option>
+          <option>Villa</option>
+        </select>
+
+        <select id="location" required>
+          <option value="">Location</option>
+          <option>Dubai Marina</option>
+          <option>Downtown</option>
+          <option>Palm Jumeirah</option>
+          <option>JVC</option>
+          <option>JBR</option>
+          <option>Other</option>
+        </select>
+
+        <input type="number" id="initialPrice" placeholder="Initial Price" required />
+        <input type="number" id="sellingPrice" placeholder="Selling Price" required />
+
+        <button type="submit">Submit</button>
+      </form>
+      <div id="thankYouMessage" style="display: none;" class="bubble bot">
+        Thank you! Your details have been submitted.
+      </div>
+    </div>
+  </div>
+
+  <!-- Optional External JS -->
+  <script src="chatbot.js"></script>
+
+  <!-- Inline Chat Popup Control Script -->
+  <script>
+  
+  let chatManuallyToggled = false;
+
+  function toggleChat() {
+    chatManuallyToggled = true;
+    const isVisible = chatPopup.style.display === "block";
+    chatPopup.style.display = isVisible ? "none" : "block";
+    chatIcon.style.display = isVisible ? "block" : "none";
+  }
+
+    function openChat() {
+      document.getElementById("chatPopup").style.display = "block";
+    }
+
+    function closeChat() {
+      document.getElementById("chatPopup").style.display = "none";
+    }
+
+    function startNewChat() {
+      window.location.href = "index.html";
+    }
+
+    function confirmRestart() {
+  const confirmed = confirm("Are you sure you want to restart the chat? All previous responses will be lost.");
+  if (confirmed) {
+    startNewChat();
+  }
+}
+
+    
+    // Optional: handle form submission
+    document.getElementById("sellForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      document.getElementById("sellForm").style.display = "none";
+      document.getElementById("thankYouMessage").style.display = "block";
+    });
+  </script>
+
+</body>
+</html>
+
+<script>
+  function openChat() {
+    document.getElementById("chatPopup").style.display = "block";
+  }
+
+  function closeChat() {
+    document.getElementById("chatPopup").style.display = "none";
+  }
+
+  // Automatically open chat when the page loads
+  window.onload = function () {
+    openChat();
+  };
+
+  // Optional: handle form submission
+  document.getElementById("sellForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    document.getElementById("sellForm").style.display = "none";
+    document.getElementById("thankYouMessage").style.display = "block";
+  });
+
+  // Initial logic to handle chat visibility
+  window.addEventListener("load", () => {
+    if (shouldOpenChat || !chatManuallyToggled) {
+      chatPopup.style.display = "block";
+      chatIcon.style.display = "none";
+    }
+  });
+</script>
