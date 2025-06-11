@@ -1,3 +1,236 @@
+<!-- firebase auth
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Nestwood Realty Chatbot</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css" />
+  <style>
+    /* Chat icon button */
+    #chatIcon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: #ffc107;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    /* Chat popup box */
+    .chat-popup {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 300px;
+      height: 400px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: none;
+      flex-direction: column;
+      z-index: 1001;
+      overflow: hidden;
+    }
+
+    .chat-popup.open {
+      display: flex;
+    }
+
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #ffc107;
+      padding: 10px;
+      border-top-left-radius: 15px;
+      border-top-right-radius: 15px;
+    }
+
+    .chat-body {
+      flex-grow: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scrollbar-width: thin;
+      scrollbar-color: #ccc #f1f1f1;
+    }
+
+    .chat-body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-body::-webkit-scrollbar-thumb {
+      background-color: #ccc;
+      border-radius: 4px;
+    }
+
+    .chat-body::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    .bubble.bot {
+      margin-bottom: 10px;
+      background-color: #f1f1f1;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    form input,
+    form select,
+    form button {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    form button {
+      background-color: #ffc107;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="chatIcon" onclick="toggleChat()">💬</div>
+
+  <div class="chat-popup" id="chatPopup">
+    <div class="chat-header">
+      <span>Nessy</span>
+    </div>
+    <div class="chat-body" id="chatBody">
+      <div class="bubble bot">
+        Hello! Welcome to Nestwood Realty!
+      </div>
+
+      <form id="contactForm" onsubmit="handleSubmit(event)">
+        <input type="text" id="name" placeholder="Your Name" required>
+        <input type="email" id="email" placeholder="Your Email" required>
+      </form>
+
+      <div id="phone-auth-section">
+        <input type="tel" id="phone" placeholder="Enter your phone number" required />
+        <div id="recaptcha-container"></div>
+        <button onclick="sendOTP()">Send OTP</button>
+      </div>
+      <div id="validation-result"></div>
+
+      <div id="otp-section" style="display:none;">
+        <input type="text" id="otp-code" placeholder="Enter OTP" />
+        <button onclick="verifyOTP()">Verify OTP</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+  <script src="chatbot.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+
+  <script>
+    // Firebase config (replace with your actual config)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAtqpTGGf0ZH7dhxum0DT3QTONFFDmLTtI",
+      authDomain: "nessy-bc15f.firebaseapp.com",
+      projectId: "nessy-bc15f",
+      storageBucket: "nessy-bc15f.appspot.com",
+      messagingSenderId: "938363270402",
+      appId: "1:938363270402:web:49cdd19b22bd65cc4a3e1b",
+    };
+
+    firebase.initializeApp(firebaseConfig);
+</script>
+
+<script>
+  let confirmationResult;
+
+  function toggleChat() {
+    const chatPopup = document.getElementById("chatPopup");
+    chatPopup.classList.toggle("open");
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const phoneInputField = document.querySelector("#phone");
+    const result = document.querySelector("#validation-result");
+
+    const iti = window.intlTelInput(phoneInputField, {
+      initialCountry: "auto",
+      preferredCountries: ["ae", "us", "gb", "in", "ca", "au"],
+      geoIpLookup: function (callback) {
+        fetch("https://ipapi.co/json")
+          .then((res) => res.json())
+          .then((data) => callback(data.country_code))
+          .catch(() => callback("us"));
+      },
+      utilsScript:
+        "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js",
+    });
+
+    window.sendOTP = function () {
+      if (iti.isValidNumber()) {
+        const number = iti.getNumber();
+        result.style.color = "green";
+        result.textContent = `Sending OTP to: ${number}`;
+
+        const appVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+          size: 'invisible'
+        });
+
+        firebase.auth().signInWithPhoneNumber(number, appVerifier)
+          .then((confirmation) => {
+            confirmationResult = confirmation;
+            result.innerHTML = `
+              OTP sent!<br>
+              <input type="text" id="otpCode" placeholder="Enter OTP" />
+              <button onclick="verifyOTP()">Verify OTP</button>
+            `;
+          })
+          .catch((error) => {
+            console.error(error);
+            result.style.color = "red";
+            result.textContent = "Failed to send OTP.";
+          });
+      } else {
+        result.style.color = "red";
+        result.textContent = "Invalid phone number.";
+      }
+    };
+
+    window.verifyOTP = function () {
+      const code = document.getElementById("otpCode").value;
+      confirmationResult.confirm(code)
+        .then((result) => {
+          const user = result.user;
+          result.style.color = "green";
+          result.textContent = "Phone number verified successfully!";
+          // ✅ Next step logic here (e.g., chatbot flow continues)
+        })
+        .catch((error) => {
+          result.style.color = "red";
+          result.textContent = "Incorrect OTP.";
+        });
+    };
+  });
+</script>
+</body>
+</html>
+-->
+
 
 <!-- index.html -->
 <html lang="en">

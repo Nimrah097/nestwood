@@ -8,94 +8,133 @@ page2.html -->
   <title>Next Step - Nestwood</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Chat icon button */
-    #chatIcon {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background-color: #ffc107;
-      border: none;
-      font-size: 28px;
-      cursor: pointer;
-      z-index: 1000;
-    }
+  /* Chat icon button */
+  #chatIcon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #ffc107;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    z-index: 1000;
+  }
 
-    /* Chat popup box */
-    .chat-popup {
+  /* Chat popup box */
+  .chat-popup {
     position: fixed;
     bottom: 90px;
     right: 20px;
     width: 300px;
+    height: 350px;
     background: #fff;
     border: 1px solid #ccc;
     border-radius: 15px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: none; /* Use .open class to toggle visibility */
+    flex-direction: column;
     z-index: 1001;
-    display: block; /* OPEN BY DEFAULT */
+    display: flex;
+    overflow: auto;
   }
 
-    .chat-popup.minimized .chat-body {
-      display: none;
-    }
+  .chat-popup.open {
+    display: flex;
+  }
 
-    .chat-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: #ffc107;
-      padding: 10px;
-      border-top-left-radius: 15px;
-      border-top-right-radius: 15px;
-    }
+  .chat-popup.minimized .chat-body {
+    display: none;
+  }
 
-    .close-button {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      padding: 5px 10px;
-      border-radius: 10px;
-    }
+  .chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffc107;
+    padding: 10px;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+  }
 
-    .newchat-button {
-      background: none;
-      border: none;
-      font-size: 14px;
-      cursor: pointer;
-      padding: 5px 10px;
-      border-radius: 10px;
-    }
+  .close-button,
+  .newchat-button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 10px;
+  }
 
-    .chat-body {
-      padding: 15px;
-    }
+  .chat-body {
+    flex-grow: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc #f1f1f1;
+  }
 
-    .bubble.bot {
-      margin-bottom: 10px;
-      background-color: #f1f1f1;
-      padding: 10px;
-      border-radius: 10px;
-    }
+  .chat-body::-webkit-scrollbar {
+    width: 6px;
+  }
 
-    .button-group {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
+  .chat-body::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+  }
 
-    .button-group button {
-      flex: 1;
-      padding: 10px;
-      background-color: #ffc107;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-  </style>
+  .chat-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  .bubble.bot {
+    margin-bottom: 10px;
+    background-color: #f1f1f1;
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .button-group button {
+    flex: 1;
+    padding: 10px;
+    background-color: #ffc107;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  form input,
+  form select,
+  form button {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+
+  form button {
+    background-color: #ffc107;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+  }
+</style>
+
 </head>
 <body>
 
@@ -104,11 +143,13 @@ page2.html -->
 
     <!-- Chat Popup -->
     <div class="chat-popup" id="chatPopup">
-      <div class="chat-header">
-        <span>Nessy</span>
-        <button class="newchat-button" onclick="event.stopPropagation(); confirmRestart()">↻</button>
-       <!-- <button onclick="toggleChat()">×</button> -->
-      </div>
+    <div class="chat-header">
+  <span>Nessy</span>
+  <div style="margin-left: auto;">
+    <button class="newchat-button" onclick="event.stopPropagation(); confirmRestart()">↩</button>
+  </div>
+</div>
+
 
     <div class="chat-body">
       <div class="bubble bot" id="greetingMsg"></div>

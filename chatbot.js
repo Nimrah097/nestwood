@@ -1,3 +1,92 @@
+/*
+// chatbot.js
+import { auth } from './firebase.js';
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+
+let confirmationResult;
+
+function toggleChat() {
+  const popup = document.getElementById('chatPopup');
+  popup.classList.toggle('open');
+}
+
+function handleSubmit(event) {
+  event.preventDefault();
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const phoneInput = window.intlTelInputGlobals.getInstance(document.getElementById('phone'));
+  const phone = phoneInput.getNumber();
+
+  if (name && email && phoneInput.isValidNumber()) {
+    // Save contact
+    fetch('http://localhost:3000/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone })
+    })
+    .then(() => {
+      sendOTP(phone, name, email);
+    })
+    .catch(err => console.error('Error saving contact:', err));
+  } else {
+    alert("Please fill out all fields with a valid phone number.");
+  }
+}
+
+// Setup reCAPTCHA
+window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
+  size: 'invisible',
+  callback: (response) => {
+    console.log('reCAPTCHA verified');
+  }
+}, auth);
+
+function sendOTP(phone, name, email) {
+  const appVerifier = window.recaptchaVerifier;
+  signInWithPhoneNumber(auth, phone, appVerifier)
+    .then(result => {
+      confirmationResult = result;
+      alert("OTP sent to your phone.");
+      showOTPVerificationUI(name, email, phone);
+    })
+    .catch(error => {
+      console.error("Error sending OTP:", error);
+      alert("Failed to send OTP. Use correct international format (e.g. +971...).");
+    });
+}
+
+function showOTPVerificationUI(name, email, phone) {
+  let otpContainer = document.getElementById('otpSection');
+  if (!otpContainer) {
+    otpContainer = document.createElement('div');
+    otpContainer.id = 'otpSection';
+    otpContainer.innerHTML = `
+      <input type="text" id="otpCode" placeholder="Enter OTP" />
+      <button id="verifyBtn">Verify OTP</button>
+    `;
+    document.getElementById('formContainer').appendChild(otpContainer);
+  }
+
+  document.getElementById('verifyBtn').onclick = () => {
+    const code = document.getElementById('otpCode').value.trim();
+    confirmationResult.confirm(code)
+      .then(() => {
+        const query = `?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`;
+        window.location.href = 'choice.html' + query;
+      })
+      .catch(err => {
+        console.error('Invalid OTP:', err);
+        alert("Invalid OTP. Please try again.");
+      });
+  };
+}
+
+window.toggleChat = toggleChat;
+window.handleSubmit = handleSubmit;
+*/
+
+//chatbot.js
+
 //chatbot.js
 
 function toggleChat() {
@@ -94,6 +183,11 @@ document.addEventListener('DOMContentLoaded', () => {
       question: 'What is your preferred price range?',
       options: ['Below 500k', '500k - 1M', '1M - 2M', 'Above 2M']
     },
+     {
+      key: 'location',
+      question: 'What is your preferred location?',
+      options: ['Marina', 'Downtown', 'Palm Jumeirah', 'JVC', 'JBR', 'Other']
+     }, 
     {
       key: 'timeline',
       question: 'What is your buying timeline?',
