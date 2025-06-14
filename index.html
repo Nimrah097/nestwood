@@ -268,6 +268,13 @@
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
 
     <script>
+  const params = new URLSearchParams(window.location.search);
+  const name = params.get("name");
+  const email = params.get("email");
+</script>
+
+
+    <script>
       document.addEventListener("DOMContentLoaded", function () {
         const phoneInputField = document.querySelector("#phone");
         const result = document.querySelector("#validation-result");

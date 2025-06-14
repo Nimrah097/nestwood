@@ -9,7 +9,6 @@ body {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: #ffc107;
   color: white;
   font-size: 30px;
   border-radius: 50%;
@@ -40,7 +39,6 @@ body {
 }*/
 
 .chat-header {
-  background: #ffc527;
   padding: 10px;
   font-weight: bold;
   display: flex;
@@ -148,7 +146,6 @@ button {
   margin-top: 8px;
   margin: 8px 0;
   width: 100%;
-  background: #ffc107;
   border: none;
   color: white;
   cursor: pointer;
@@ -162,4 +159,8 @@ button {
 
 .chat-popup.minimized .chat-header {
   justify-content: space-between;
+}
+
+.chat-header, .chat-icon, .chat-header, .button-group button {
+  background: #ffc527
 }

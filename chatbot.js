@@ -1,93 +1,6 @@
-/*
-// chatbot.js
-import { auth } from './firebase.js';
-import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
-
-let confirmationResult;
-
-function toggleChat() {
-  const popup = document.getElementById('chatPopup');
-  popup.classList.toggle('open');
-}
-
-function handleSubmit(event) {
-  event.preventDefault();
-  const name = document.getElementById('name').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const phoneInput = window.intlTelInputGlobals.getInstance(document.getElementById('phone'));
-  const phone = phoneInput.getNumber();
-
-  if (name && email && phoneInput.isValidNumber()) {
-    // Save contact
-    fetch('http://localhost:3000/contact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, phone })
-    })
-    .then(() => {
-      sendOTP(phone, name, email);
-    })
-    .catch(err => console.error('Error saving contact:', err));
-  } else {
-    alert("Please fill out all fields with a valid phone number.");
-  }
-}
-
-// Setup reCAPTCHA
-window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
-  size: 'invisible',
-  callback: (response) => {
-    console.log('reCAPTCHA verified');
-  }
-}, auth);
-
-function sendOTP(phone, name, email) {
-  const appVerifier = window.recaptchaVerifier;
-  signInWithPhoneNumber(auth, phone, appVerifier)
-    .then(result => {
-      confirmationResult = result;
-      alert("OTP sent to your phone.");
-      showOTPVerificationUI(name, email, phone);
-    })
-    .catch(error => {
-      console.error("Error sending OTP:", error);
-      alert("Failed to send OTP. Use correct international format (e.g. +971...).");
-    });
-}
-
-function showOTPVerificationUI(name, email, phone) {
-  let otpContainer = document.getElementById('otpSection');
-  if (!otpContainer) {
-    otpContainer = document.createElement('div');
-    otpContainer.id = 'otpSection';
-    otpContainer.innerHTML = `
-      <input type="text" id="otpCode" placeholder="Enter OTP" />
-      <button id="verifyBtn">Verify OTP</button>
-    `;
-    document.getElementById('formContainer').appendChild(otpContainer);
-  }
-
-  document.getElementById('verifyBtn').onclick = () => {
-    const code = document.getElementById('otpCode').value.trim();
-    confirmationResult.confirm(code)
-      .then(() => {
-        const query = `?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`;
-        window.location.href = 'choice.html' + query;
-      })
-      .catch(err => {
-        console.error('Invalid OTP:', err);
-        alert("Invalid OTP. Please try again.");
-      });
-  };
-}
-
-window.toggleChat = toggleChat;
-window.handleSubmit = handleSubmit;
-*/
-
 //chatbot.js
 
-//chatbot.js
+let email = ""; // 
 
 function toggleChat() {
   const popup = document.getElementById('chatPopup');
@@ -175,13 +88,13 @@ document.addEventListener('DOMContentLoaded', () => {
     {
       key: 'bhk',
       question: 'What BHK option are you interested in?',
-      options: ['Studio', '1 BHK', '2 BHK', '3 BHK', '4 BHK'],
+      options: ['Studio', '1 BHK', '2 BHK', '3 BHK', '4+ BHK'],
       condition: () => buyData.propertyType === 'Apartment'
     },
     {
       key: 'price',
-      question: 'What is your preferred price range?',
-      options: ['Below 500k', '500k - 1M', '1M - 2M', 'Above 2M']
+      question: 'What is your preferred price range (in AED)?',
+      options: ['Below 500K', '500K - 1M', '1M - 2M', 'Above 2M']
     },
      {
       key: 'location',
@@ -224,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function handleUserResponse(response) {
+    function handleUserResponse(response) {
     const step = steps[currentStep];
     buyData[step.key] = response;
 
@@ -250,27 +163,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     chatBody.scrollTop = chatBody.scrollHeight;
-  }
+  } 
 
   function submitBuyData() {
-    fetch('http://localhost:3000/buy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(buyData)
-    })
-    .then(() => {
-      const thankYou = document.createElement('div');
-      thankYou.className = 'bubble bot';
-      thankYou.textContent = "Thank you! Your buying preferences have been recorded. We'll get in touch with you soon.";
-      chatBody.appendChild(thankYou);
-    })
-    .catch(err => {
-      console.error('Error submitting buy data:', err);
-      const errorBubble = document.createElement('div');
-      errorBubble.className = 'bubble bot';
-      errorBubble.textContent = "Oops! Something went wrong. Please try again later.";
-      chatBody.appendChild(errorBubble);
+  const payload = {
+    budget: buyData.price,
+    location: buyData.location,
+    property_type: buyData.propertyType,
+  };
+
+  console.log("Sending payload:", payload);
+
+  fetch('http://127.0.0.1:5000/recommend', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(payload)  // 👈 keep using the same payload
+})
+.then(response => response.json())
+.then(data => {
+  const properties = data.properties || [];  // 👈 fix key name
+
+  if (properties.length > 0) {
+    properties.forEach(property => {
+      const propertyBubble = document.createElement('div');
+      propertyBubble.className = 'bubble bot';
+      propertyBubble.textContent =
+        `${property.name} in ${property.location} for ₹${property.price}\n${property.url}`;
+      chatBody.appendChild(propertyBubble);
     });
+  } else {
+    const noMatchBubble = document.createElement('div');
+    noMatchBubble.className = 'bubble bot';
+    noMatchBubble.textContent = 'Sorry, no matching properties found.';
+    chatBody.appendChild(noMatchBubble);
+  }
+})
+.catch(err => {
+  console.error('Error fetching recommendations:', err);
+  const errorBubble = document.createElement('div');
+  errorBubble.className = 'bubble bot';
+  errorBubble.textContent = 'An error occurred while getting recommendations.';
+  chatBody.appendChild(errorBubble);
+});
   }
 
   function getQueryParam(key) {
@@ -278,3 +214,60 @@ document.addEventListener('DOMContentLoaded', () => {
     return params.get(key) || '';
   }
 });
+
+function appendChild(role, message) {
+  const bubble = document.createElement('div');
+  bubble.className = `bubble ${role}`; // role = "user" or "bot"
+  bubble.textContent = message;
+  chatBody.appendChild(bubble);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function displayMatchedProperties() {
+  const { propertyType, bhk, price } = userResponses;
+
+  // Parse price string to min and max values
+  const cleanedPrice = price.replace(/[^\d\-]/g, ""); // e.g. "1000000-1500000"
+  const [minPrice, maxPrice] = cleanedPrice.split("-").map(p => parseInt(p.trim()));
+
+  fetch(`/api/match-properties?type=${encodeURIComponent(propertyType)}&bhk=${encodeURIComponent(bhk)}&minPrice=${minPrice}&maxPrice=${maxPrice}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.length === 0) {
+        addBotMessage("No matching properties were found based on your preferences.");
+      } else {
+        addBotMessage("Here are your property search results:");
+        data.forEach((property, index) => {
+          const details = property.buyDetails;
+          const message = `
+<b>Property ${index + 1}</b><br>
+🏠 Type: ${details.propertyType}<br>
+🛏 BHK: ${details.bhk}<br>
+📍 Location: ${details.location}<br>
+💰 Price: ${details.price}<br>
+🕒 Timeline: ${details.timeline}<br><br>
+------------------------------`;
+          addBotMessage(message, true); // Pass true to allow HTML
+        });
+      }
+    })
+    .catch(err => {
+      console.error("Error fetching properties:", err);
+      addBotMessage("An error occurred while fetching property suggestions.");
+    });
+}
+
+function addBotMessage(text, isHtml = false) {
+  const chatBody = document.getElementById("chatBody");
+  const bubble = document.createElement("div");
+  bubble.className = "bubble bot";
+  bubble.innerHTML = isHtml ? text : escapeHTML(text);
+  chatBody.appendChild(bubble);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function escapeHTML(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}

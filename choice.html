@@ -163,66 +163,66 @@ page2.html -->
   </div>
 
   <script>
-  const params = new URLSearchParams(window.location.search);
-  const name = params.get('name');
-  const email = params.get('email');
-  const phone = params.get('phone');
-  const shouldOpenChat = params.get('chat') === 'open';
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get('name');
+    const email = params.get('email');
+    const phone = params.get('phone');
+    const shouldOpenChat = params.get('chat') === 'open';
 
-  const chatPopup = document.getElementById("chatPopup");
-  const chatIcon = document.getElementById("chatIcon");
-  const greeting = document.getElementById("greetingMsg");
+    const chatPopup = document.getElementById("chatPopup");
+    const chatIcon = document.getElementById("chatIcon");
+    const greeting = document.getElementById("greetingMsg");
 
-  let chatManuallyToggled = false;
+    let chatManuallyToggled = false;
 
-  if (name) {
-    greeting.textContent = `Hi ${name}`;
+    if (name) {
+      greeting.textContent = `Hi ${name}`;
+    }
+
+    function toggleChat() {
+      chatManuallyToggled = true;
+      const isVisible = chatPopup.style.display === "block";
+      chatPopup.style.display = isVisible ? "none" : "block";
+      chatIcon.style.display = isVisible ? "block" : "none";
+    }
+
+    function startNewChat() {
+      window.location.href = "index.html";
+    }
+
+    function confirmRestart() {
+    const confirmed = confirm("Are you sure you want to restart the chat? All previous responses will be lost.");
+    if (confirmed) {
+      startNewChat();
+    }
   }
 
-  function toggleChat() {
-    chatManuallyToggled = true;
-    const isVisible = chatPopup.style.display === "block";
-    chatPopup.style.display = isVisible ? "none" : "block";
-    chatIcon.style.display = isVisible ? "block" : "none";
-  }
+      
+    function chooseOption(option) {
+      fetch('http://localhost:3000/choice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone, choice: option })
+      }).catch(err => {
+        console.warn('Fetch failed:', err);
+      });
 
-  function startNewChat() {
-    window.location.href = "index.html";
-  }
+      const queryParams = `?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&chat=open`;
 
-  function confirmRestart() {
-  const confirmed = confirm("Are you sure you want to restart the chat? All previous responses will be lost.");
-  if (confirmed) {
-    startNewChat();
-  }
-}
+      if (option === 'sell') {
+        window.location.href = `sell.html${queryParams}`;
+      } else if (option === 'buy') {
+        window.location.href = `buy.html${queryParams}`;
+      }
+    }
 
-    
-  function chooseOption(option) {
-    fetch('http://localhost:3000/choice', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, phone, choice: option })
-    }).catch(err => {
-      console.warn('Fetch failed:', err);
+    // Initial logic to handle chat visibility
+    window.addEventListener("load", () => {
+      if (shouldOpenChat || !chatManuallyToggled) {
+        chatPopup.style.display = "block";
+        chatIcon.style.display = "none";
+      }
     });
-
-    const queryParams = `?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&chat=open`;
-
-    if (option === 'sell') {
-      window.location.href = `sell.html${queryParams}`;
-    } else if (option === 'buy') {
-      window.location.href = `buy.html${queryParams}`;
-    }
-  }
-
-  // Initial logic to handle chat visibility
-  window.addEventListener("load", () => {
-    if (shouldOpenChat || !chatManuallyToggled) {
-      chatPopup.style.display = "block";
-      chatIcon.style.display = "none";
-    }
-  });
-</script>
+  </script>
 </body>
 </html>
